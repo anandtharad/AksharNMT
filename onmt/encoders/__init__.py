@@ -7,7 +7,7 @@ from onmt.encoders.ggnn_encoder import GGNNEncoder
 from onmt.encoders.rnn_encoder import RNNEncoder
 from onmt.encoders.cnn_encoder import CNNEncoder
 from onmt.encoders.mean_encoder import MeanEncoder
-
+from onmt.encoders.conformer import ConformerEncoder
 
 str2enc = {
     "ggnn": GGNNEncoder,
@@ -16,6 +16,7 @@ str2enc = {
     "cnn": CNNEncoder,
     "transformer": TransformerEncoder,
     "mean": MeanEncoder,
+    "conformer": ConformerEncoder
 }
 
 __all__ = [
@@ -26,6 +27,7 @@ __all__ = [
     "CNNEncoder",
     "MeanEncoder",
     "str2enc",
+    "ConformerEncoder"
 ]
 
 
