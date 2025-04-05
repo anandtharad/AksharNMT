@@ -1,3 +1,4 @@
+conformer.py
 import logging
 from typing import List, Optional, Tuple, Union
 
@@ -481,6 +482,46 @@ class ConformerEncoder(EncoderBase):
 
     def output_size(self) -> int:
         return self._output_size
+
+    @classmethod
+    def from_opt(cls, opt, embeddings):
+        """Alternate constructor for ConformerEncoder using OpenNMT-style opts."""
+        print("DEBUG - normalize_before:", opt.layer_norm, type(opt.layer_norm))
+
+        return cls(
+            input_size=embeddings.embedding_size,
+            output_size=getattr(opt, "output_size", 512),
+            attention_heads=getattr(opt, "attention_heads", 4),
+            linear_units=getattr(opt, "linear_units", 2048),
+            num_blocks=getattr(opt, "enc_layers", 6),
+            dropout_rate=getattr(opt, "dropout", 0.1)[0],
+            positional_dropout_rate=getattr(opt, "positional_dropout_rate", 0.1),
+            attention_dropout_rate=getattr(opt, "attention_dropout", 0.0)[0],
+            input_layer=getattr(opt, "input_layer", "linear"),
+            normalize_before=getattr(opt, "normalize_before", True),
+            concat_after=getattr(opt, "concat_after", False),
+            positionwise_layer_type=getattr(opt, "positionwise_layer_type", "linear"),
+            positionwise_conv_kernel_size=getattr(opt, "positionwise_conv_kernel_size", 3),
+            macaron_style=getattr(opt, "macaron_style", False),
+            rel_pos_type=getattr(opt, "rel_pos_type", "legacy"),
+            pos_enc_layer_type=getattr(opt, "pos_enc_layer_type", "rel_pos"),
+            selfattention_layer_type=getattr(opt, "selfattention_layer_type", "rel_selfattn"),
+            activation_type=getattr(opt, "activation_type", "swish"),
+            use_cnn_module=getattr(opt, "use_cnn_module", True),
+            zero_triu=getattr(opt, "zero_triu", False),
+            cnn_module_kernel=getattr(opt, "cnn_module_kernel", 31),
+            padding_idx=getattr(opt, "padding_idx", -1),
+            interctc_layer_idx=getattr(opt, "interctc_layer_idx", []),
+            interctc_use_conditioning=getattr(opt, "interctc_use_conditioning", False),
+            ctc_trim=getattr(opt, "ctc_trim", False),
+            stochastic_depth_rate=getattr(opt, "stochastic_depth_rate", 0.0),
+            layer_drop_rate=getattr(opt, "layer_drop_rate", 0.0),
+            max_pos_emb_len=getattr(opt, "max_pos_emb_len", 5000),
+            qk_norm=getattr(opt, "qk_norm", False),
+            use_flash_attn=getattr(opt, "use_flash_attn", True),
+        )
+
+
 
     def forward(
         self,
