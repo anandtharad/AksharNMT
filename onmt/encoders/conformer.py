@@ -87,6 +87,7 @@ class ConformerEncoderLayer(nn.Module):
     ):
         """Construct an EncoderLayer object."""
         super(ConformerEncoderLayer, self).__init__()
+        print(">>> Using custom ConformerEncoderLayer from onmt/encoders/conformer.py")
         self.self_attn = self_attn
         self.feed_forward = feed_forward
         self.feed_forward_macaron = feed_forward_macaron
@@ -124,6 +125,12 @@ class ConformerEncoderLayer(nn.Module):
             torch.Tensor: Mask tensor (#batch, 1, time).
 
         """
+        print("==== DEBUG START ====")
+        print("SELF ATTN:", self.self_attn)
+        print("SELF ATTN TYPE:", type(self.self_attn))
+        import inspect
+        print("ATTN FORWARD SIG:", inspect.signature(self.self_attn.forward))
+
         if isinstance(x_input, tuple):
             x, pos_emb = x_input[0], x_input[1]
         else:
@@ -172,6 +179,11 @@ class ConformerEncoderLayer(nn.Module):
             x_att = self.self_attn(x_q, x, x, pos_emb, mask)
         else:
             x_att = self.self_attn(x_q, x, x, mask)
+        print("SELF ATTN TYPE:", type(self.self_attn))
+        print("x_q shape:", x_q.shape)
+        print("x shape:", x.shape)
+        print("pos_emb is None:", pos_emb is None)
+        print("mask shape:", None if mask is None else mask.shape)
 
         if self.concat_after:
             x_concat = torch.cat((x, x_att), dim=-1)
@@ -278,6 +290,7 @@ class ConformerEncoder(EncoderBase):
         max_pos_emb_len: int = 5000,
         qk_norm: bool = False,
         use_flash_attn: bool = True,
+        embeddings=None
     ):
         super().__init__()
         self._output_size = output_size
@@ -363,8 +376,9 @@ class ConformerEncoder(EncoderBase):
                 pos_enc_class(output_size, positional_dropout_rate, max_pos_emb_len),
             )
         elif input_layer is None:
-            self.embed = torch.nn.Sequential(
-                pos_enc_class(output_size, positional_dropout_rate, max_pos_emb_len)
+            self.embed = nn.Sequential(
+        embeddings,
+        pos_enc_class(output_size, positional_dropout_rate, max_pos_emb_len),
             )
         else:
             raise ValueError("unknown input_layer: " + input_layer)
@@ -456,7 +470,7 @@ class ConformerEncoder(EncoderBase):
 
         self.encoders = repeat(
             num_blocks,
-            lambda lnum: EncoderLayer(
+            lambda lnum: ConformerEncoderLayer(
                 output_size,
                 encoder_selfattn_layer(*encoder_selfattn_layer_args),
                 positionwise_layer(*positionwise_layer_args),
@@ -479,6 +493,7 @@ class ConformerEncoder(EncoderBase):
         self.conditioning_layer = None
         self.ctc_trim = ctc_trim
 
+
     def output_size(self) -> int:
         return self._output_size
 
@@ -496,13 +511,13 @@ class ConformerEncoder(EncoderBase):
             dropout_rate=getattr(opt, "dropout", 0.1)[0],
             positional_dropout_rate=getattr(opt, "positional_dropout_rate", 0.1),
             attention_dropout_rate=getattr(opt, "attention_dropout", 0.0)[0],
-            input_layer=getattr(opt, "input_layer", "linear"),
+            input_layer=getattr(opt, "input_layer", None),
             normalize_before=getattr(opt, "normalize_before", True),
             concat_after=getattr(opt, "concat_after", False),
             positionwise_layer_type=getattr(opt, "positionwise_layer_type", "linear"),
             positionwise_conv_kernel_size=getattr(opt, "positionwise_conv_kernel_size", 3),
             macaron_style=getattr(opt, "macaron_style", False),
-            rel_pos_type=getattr(opt, "rel_pos_type", "legacy"),
+            rel_pos_type=getattr(opt, "rel_pos_type", "latest"),
             pos_enc_layer_type=getattr(opt, "pos_enc_layer_type", "rel_pos"),
             selfattention_layer_type=getattr(opt, "selfattention_layer_type", "rel_selfattn"),
             activation_type=getattr(opt, "activation_type", "swish"),
@@ -518,6 +533,7 @@ class ConformerEncoder(EncoderBase):
             max_pos_emb_len=getattr(opt, "max_pos_emb_len", 5000),
             qk_norm=getattr(opt, "qk_norm", False),
             use_flash_attn=getattr(opt, "use_flash_attn", True),
+            embeddings=embeddings
         )
 
 
@@ -620,4 +636,4 @@ class ConformerEncoder(EncoderBase):
         olens = masks.squeeze(1).sum(1)
         if len(intermediate_outs) > 0:
             return (xs_pad, intermediate_outs), olens, None
-        return xs_pad, olens, None
+        return xs_pad,  None, olens
