@@ -15,9 +15,11 @@ tp = spm.SentencePieceProcessor(model_file=tgt_model)
 # Sample sentences
 sample_sentences = {
     "How are you?": "How are you?",
-    "Where are you going?": "Where are you going?",
+    "This is available from the Liaison officer, the government of Mizoram in Kolkata, Silchar, Shillong, Guwahati and New Delhi.": "This is available from the Liaison officer, the government of Mizoram in Kolkata, Silchar, Shillong, Guwahati and New Delhi.",
     "I love neural machine translation.": "I love neural machine translation.",
-    "This is a test sentence.": "This is a test sentence."
+    "This is a test sentence.": "This is a test sentence.",
+    "Between 2000-2005 and 2005-2010, India proposed to invest a sum of ₹ 1,03,315 crore (INR) and ₹ 2,10,326 crore (INR) in irrigation and flood control in India.": "Between 2000-2005 and 2005-2010, India proposed to invest a sum of ₹ 1,03,315 crore (INR) and ₹ 2,10,326 crore (INR) in irrigation and flood control in India.",
+    "Two days later, he scored 4 goals when India defeated Switzerland 6–0.": "Two days later, he scored 4 goals when India defeated Switzerland 6–0."
 }
 
 # Translation function
